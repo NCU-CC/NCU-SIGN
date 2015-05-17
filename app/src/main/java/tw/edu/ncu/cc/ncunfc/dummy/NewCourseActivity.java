@@ -249,6 +249,7 @@ public class NewCourseActivity extends ActionBarActivity {
         protected void onPostExecute(Void unused) {
             dialog.dismiss();
             if(this.status == STATUS_SUCCESS){
+                MainActivity.adapter.notifyDataSetChanged();
                 closeDataBase();
                 finish();
             }

@@ -147,9 +147,12 @@ public class SignTable {
 
         // 使用編號為查詢條件
         String where = SN_COLUMN + "=" + SN;
+        Log.e("debug",where);
         // 執行查詢
         Cursor cursor = db.query(
                 TABLE_NAME, null, where, null, null, null, null, null);
+
+        cursor.moveToFirst();
 
         while (cursor.moveToNext()) {
             result.add(getRecord(cursor));

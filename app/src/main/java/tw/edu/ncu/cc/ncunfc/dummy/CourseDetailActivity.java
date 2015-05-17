@@ -86,6 +86,11 @@ public class CourseDetailActivity extends ActionBarActivity {
         insertSampleIntoDataBase();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        initDataBase();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -236,15 +241,9 @@ public class CourseDetailActivity extends ActionBarActivity {
         checkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {//檢視簽到內容
-                //ArrayList<SignRecord> signRecords = signTable.getAll();
-                //getAll還是有問題，為什麼傳回來的SignRecord全部變成最後一個?
                 ArrayList<SignRecord> signRecords = signTable.get("" + course.getSN());
-                Log.e("debug","signRecords.size():" + signRecords.size());
                 String dialogMessage = "";
                 for(int i=0;i<signRecords.size();i++){
-                    Log.e("debug","signRecords.get("+i+").getSN():" + signRecords.get(i).getSN());
-                    Log.e("debug","signRecords.get("+i+").getName():" + signRecords.get(i).getName());
-
                     Timestamp timestamp = new Timestamp(signRecords.get(i).getSignTime());
                     String timeString = timestamp.toString().substring(0,timestamp.toString().lastIndexOf(":"));
 
@@ -327,6 +326,7 @@ public class CourseDetailActivity extends ActionBarActivity {
                 //update course data in DB
                 course.setName(nameEditText.getText().toString());
                 course.setMailDes(mailDesEditText.getText().toString());
+                course.setDateTime(courseDateTime.getTimeInMillis());
                 new updateCourseTask(v.getContext(),course).execute();
             }
         });
@@ -338,6 +338,10 @@ public class CourseDetailActivity extends ActionBarActivity {
                 newAct.setClass(CourseDetailActivity.this, SignActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putLong(CourseTable.SN_COLUMN, course.getSN());
+                bundle.putString(CourseTable.NAME_COLUMN, course.getName());
+                bundle.putLong(CourseTable.DATE_TIME_COLUMN, course.getDateTime());
+                bundle.putString(CourseTable.MAILDES_COLUMN, course.getMailDes());
+
                 newAct.putExtras(bundle);
                 closeDataBase();
                 startActivity( newAct );
@@ -432,6 +436,7 @@ public class CourseDetailActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(Void unused){
+            MainActivity.adapter.notifyDataSetChanged();
             dialog.dismiss();
             finish();
         }

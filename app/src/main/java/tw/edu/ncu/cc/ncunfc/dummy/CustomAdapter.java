@@ -73,7 +73,9 @@ public class CustomAdapter extends BaseAdapter {
         }
 
         //設定內容文字
-        viewTag.dateTextView.setText(new Timestamp(courseList.get(position).getDateTime()).toString());
+        String timeString = new Timestamp(courseList.get(position).getDateTime()).toString();
+        timeString = timeString.substring(0,timeString.lastIndexOf(":"));
+        viewTag.dateTextView.setText(timeString);
         viewTag.nameTextView.setText(courseList.get(position).getName());
 
         return convertView;

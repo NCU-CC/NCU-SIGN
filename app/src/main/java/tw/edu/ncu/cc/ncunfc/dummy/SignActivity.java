@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -157,7 +158,7 @@ public class SignActivity extends ActionBarActivity {
         Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         Log.i("Foreground dispatch", "Discovered tag with intent: " + intent);
         String cardID = bytesToHex(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
-        statusTextView.append("\nDiscovered tag " + ++mCount + " with intent: " + intent + "ID: " + cardID );
+        //statusTextView.append("\nDiscovered tag " + ++mCount + " with intent: " + intent + "ID: " + cardID);
         new getStudentDataTask(this, course.getSN(),
                 System.currentTimeMillis(),cardID).execute();
     }
@@ -188,6 +189,8 @@ public class SignActivity extends ActionBarActivity {
         String cardID;
         Dialog dialog;
 
+        DummyResponse response;
+
         public getStudentDataTask(SignActivity s, long SN, Long time, String cardID){
             super();
             this.signActivityWeakRef =new WeakReference<SignActivity>(s);
@@ -212,14 +215,13 @@ public class SignActivity extends ActionBarActivity {
         @Override
         protected Void doInBackground(Void... params) {
             //call api get student data and save into sql table
-            DummyResponse response = dummyApiCall(cardID);
+            response = dummyApiCall(cardID);
             SignRecord temp = new SignRecord();
             temp.setName(response.dummyName);
             temp.setUnit(response.dummyUnit);
             temp.setTime(this.time);
             temp.setSN(this.SN);
             signTable.insert(temp);
-            dummyApiCall(cardID);
             return null;
         }
 
@@ -228,6 +230,7 @@ public class SignActivity extends ActionBarActivity {
             if (signActivityWeakRef.get() != null && !signActivityWeakRef.get().isFinishing()){
                 dialog.dismiss();
             }
+            updateStatusTextView(response.dummyName, response.dummyUnit, this.time);
         }
 
         private DummyResponse dummyApiCall(String cardID){
@@ -259,23 +262,20 @@ public class SignActivity extends ActionBarActivity {
         statusTextView = (TextView) findViewById(R.id.status_textView);
         stopButton = (Button) findViewById(R.id.stop_button);
 
-        TextView temp = (TextView) findViewById(R.id.name_textView);
-        temp.setText(course.getName());
+        TextView tempView = (TextView) findViewById(R.id.name_textView);
+        tempView.setText(course.getName());
 
-        Calendar courseDateTime = Calendar.getInstance();
-        courseDateTime.setTimeInMillis(course.getDateTime());
+        Timestamp temp = new Timestamp(course.getDateTime());
+        String[] tempString  = temp.toString().split(" ");
+        String dateString = tempString[0];
+        String timeString = tempString[1].substring(0, tempString[1].lastIndexOf(":"));
 
-        String day = courseDateTime.getDisplayName(Calendar.DAY_OF_MONTH, Calendar.LONG, Locale.getDefault());
-        String month = courseDateTime.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault());
-        String year = courseDateTime.getDisplayName(Calendar.YEAR, Calendar.LONG, Locale.CHINESE.getDefault());
+        tempView = (TextView) findViewById(R.id.date_textView);
+        tempView.setText(dateString);
 
-        String hour = courseDateTime.getDisplayName(Calendar.HOUR_OF_DAY, Calendar.LONG, Locale.CHINESE.getDefault());
-        String minute = courseDateTime.getDisplayName(Calendar.MINUTE, Calendar.LONG, Locale.CHINESE.getDefault());
+        tempView = (TextView) findViewById(R.id.time_textView);
+        tempView.setText(timeString);
 
-        temp = (TextView) findViewById(R.id.date_textView);
-        temp.setText(year + " " + month + " " + day);
-        temp = (TextView) findViewById(R.id.time_textView);
-        temp.setText(hour + " " + minute);
     }
 
     private void setListeners(final SignActivity s){
@@ -286,6 +286,12 @@ public class SignActivity extends ActionBarActivity {
                 s.finish();
             }
         });
+    }
+
+    public void updateStatusTextView(String name, String unit, long timeStamp){
+        statusTextView.setText("姓名：" + name +
+                               "\n卡號：" + unit +
+                               "\n簽到時間：" + new Timestamp(timeStamp).toString());
     }
 
 }

@@ -48,10 +48,12 @@ public class MainActivity extends ActionBarActivity {
 
     //UI
     private ListView courseListView;
-    private CustomAdapter adapter;
-
+    public static CustomAdapter adapter;
+    //為了讓CourseDetailActivity在更改完課程資料後可以notify這個adapter，所以把這個field設為public static
+    //不然更改完內容直接跳回來的話，有可能因為listView裡的東西被改過，又沒有(或來不及，因為AsyncTask來不及通知)通知listview的adapter而閃退。
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e("debug","MainActivity.OnCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -126,6 +128,7 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public void onResume() {
+        Log.e("debug","MainActivity.OnResume");
         super.onResume();
         //利用asynctask從DB拿資料
         new getCourseTask(this, adapter).execute();
@@ -190,6 +193,7 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPreExecute(){
+            Log.e("debug","MainActivity.getCourseTask.onPreExecute()");
             super.onPreExecute();
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setMessage("載入資料中");

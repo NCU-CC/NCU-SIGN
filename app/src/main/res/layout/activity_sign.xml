@@ -16,7 +16,8 @@ tools:context="tw.edu.ncu.cc.ncunfc.dummy.SignActivity">
     <TextView android:id="@android:id/empty"
         android:text="課程名稱"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 </TableRow>
 
 <TableRow
@@ -25,7 +26,8 @@ tools:context="tw.edu.ncu.cc.ncunfc.dummy.SignActivity">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/name_textView"/>
+        android:id="@+id/name_textView"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 </TableRow>
 
 <TableRow
@@ -34,7 +36,8 @@ tools:context="tw.edu.ncu.cc.ncunfc.dummy.SignActivity">
     <TextView android:id="@android:id/empty"
         android:text="日期"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 </TableRow>
 
 <TableRow
@@ -44,7 +47,8 @@ tools:context="tw.edu.ncu.cc.ncunfc.dummy.SignActivity">
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:id="@+id/date_textView"/>
+        android:id="@+id/date_textView"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 </TableRow>
 
 <TableRow
@@ -53,7 +57,8 @@ tools:context="tw.edu.ncu.cc.ncunfc.dummy.SignActivity">
     <TextView android:id="@android:id/empty"
         android:text="時間"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 </TableRow>
 
 <TableRow
@@ -64,7 +69,8 @@ tools:context="tw.edu.ncu.cc.ncunfc.dummy.SignActivity">
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:id="@+id/time_textView"/>
+        android:id="@+id/time_textView"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 </TableRow>
 
 <TableRow
@@ -72,11 +78,12 @@ tools:context="tw.edu.ncu.cc.ncunfc.dummy.SignActivity">
     android:layout_height="fill_parent">
 
     <TextView
-        android:text="姓名：張業永\n卡號：AA:BB:CCC:DD\n簽到時間：15:34"
+        android:text="姓名：\n卡號：\n簽到時間："
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:id="@+id/status_textView"/>
+        android:id="@+id/status_textView"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 </TableRow>
 
 <TableRow
@@ -85,7 +92,7 @@ tools:context="tw.edu.ncu.cc.ncunfc.dummy.SignActivity">
 
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="停止簽到"
         android:id="@+id/stop_button" />

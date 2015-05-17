@@ -4,10 +4,10 @@ package tw.edu.ncu.cc.ncunfc.dummy.obj;
  * Created by andre.hu on 2015/4/14.
  */
 public class SignRecord {
-    private static String SN;
-    private static long signTime;
-    private static String unit;
-    private static String name;
+    private String SN;
+    private long signTime;
+    private String unit;
+    private String name;
 
     public SignRecord(){
 

@@ -105,8 +105,6 @@ public class CourseTable {
             count++;
         }
 
-        Log.e("debug","result.size:"+ result.size());
-
         cursor.close();
 
         return result;

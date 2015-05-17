@@ -14,17 +14,17 @@
         android:layout_height="fill_parent">
         <TextView android:id="@android:id/empty"
             android:text="課程名稱"
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
             android:gravity="left"
             android:layout_span="2"/>
     </TableRow>
 
     <TableRow
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="fill_parent">
         <EditText
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/name_editText"
             android:layout_span="2"/>

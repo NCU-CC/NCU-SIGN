@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Date"
-        android:id="@+id/dateTextView"
-        android:layout_gravity="center"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:text="課程 1"
+        android:id="@+id/nameTextView"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="30dp" />
+
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Name"
-        android:id="@+id/nameTextView"
+        android:text="2015-05-17"
+        android:id="@+id/dateTextView"
         android:textAppearance="?android:attr/textAppearanceLarge" />
+
+
 
 </LinearLayout>
