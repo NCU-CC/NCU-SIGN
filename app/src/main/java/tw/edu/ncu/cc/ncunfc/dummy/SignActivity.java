@@ -8,6 +8,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
@@ -54,6 +57,10 @@ public class SignActivity extends ActionBarActivity {
     //Sql data
     private SignTable signTable;
 
+    //Sound effects
+    MediaPlayer beepPlayer;
+    MediaPlayer errorPlayer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +74,7 @@ public class SignActivity extends ActionBarActivity {
         course = new Course(SN, name, date, mailDes);
 
         initView();
+        initSounds();
         setListeners(this);
         initDataBase(this);
 
@@ -132,12 +140,12 @@ public class SignActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_nfc, menu);
+        //getMenuInflater().inflate(R.menu.menu_nfc, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {/*
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -148,7 +156,7 @@ public class SignActivity extends ActionBarActivity {
             startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
             return true;
         }
-
+        */
         return super.onOptionsItemSelected(item);
     }
 
@@ -160,7 +168,8 @@ public class SignActivity extends ActionBarActivity {
         String cardID = bytesToHex(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
         //statusTextView.append("\nDiscovered tag " + ++mCount + " with intent: " + intent + "ID: " + cardID);
         new getStudentDataTask(this, course.getSN(),
-                System.currentTimeMillis(),cardID).execute();
+                System.currentTimeMillis(), cardID).execute();
+        beepPlayer.start();
     }
 
     @Override
@@ -231,6 +240,7 @@ public class SignActivity extends ActionBarActivity {
                 dialog.dismiss();
             }
             updateStatusTextView(response.dummyName, response.dummyUnit, this.time);
+            errorPlayer.start();
         }
 
         private DummyResponse dummyApiCall(String cardID){
@@ -275,7 +285,11 @@ public class SignActivity extends ActionBarActivity {
 
         tempView = (TextView) findViewById(R.id.time_textView);
         tempView.setText(timeString);
+    }
 
+    private void initSounds(){
+        beepPlayer = MediaPlayer.create(this, R.raw.beep);
+        errorPlayer = MediaPlayer.create(this, R.raw.error);
     }
 
     private void setListeners(final SignActivity s){

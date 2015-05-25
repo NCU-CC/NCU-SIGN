@@ -7,13 +7,12 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.Spanned;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,7 +27,6 @@ import java.io.File;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Locale;
 
 import tw.edu.ncu.cc.ncunfc.R;
 import tw.edu.ncu.cc.ncunfc.dummy.obj.Course;
@@ -59,7 +57,6 @@ public class CourseDetailActivity extends ActionBarActivity {
     //DB
     private CourseTable courseTable;
     private SignTable signTable;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -239,6 +236,7 @@ public class CourseDetailActivity extends ActionBarActivity {
         });
 
         checkButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {//檢視簽到內容
                 ArrayList<SignRecord> signRecords = signTable.get("" + course.getSN());
@@ -246,10 +244,6 @@ public class CourseDetailActivity extends ActionBarActivity {
                 for(int i=0;i<signRecords.size();i++){
                     Timestamp timestamp = new Timestamp(signRecords.get(i).getSignTime());
                     String timeString = timestamp.toString().substring(0,timestamp.toString().lastIndexOf(":"));
-
-                    //debug
-                    dialogMessage += signRecords.get(i).getSN() + " ";
-
                     dialogMessage += timeString + " ";
                     dialogMessage += signRecords.get(i).getName() + "  ";
                     dialogMessage += signRecords.get(i).getUnit() + "\n";
@@ -291,7 +285,9 @@ public class CourseDetailActivity extends ActionBarActivity {
                 Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
                         "mailto", course.getMailDes(), null));
                 Timestamp timestamp = new Timestamp(course.getDateTime());
-                String title = timestamp.toString() + " " + course.getName() + "簽到記錄";
+                String timeString = timestamp.toString();
+                timeString = timeString.substring(0,timeString.lastIndexOf(":"));
+                String title = timeString + " " + course.getName() + " 簽到記錄";
                 intent.putExtra(Intent.EXTRA_SUBJECT, title);
                 intent.putExtra(Intent.EXTRA_TEXT, "如附件");
                 Log.e("debug","excelFilePath:" + excelFile.getAbsolutePath());
@@ -310,7 +306,8 @@ public class CourseDetailActivity extends ActionBarActivity {
                 editTextList.add((EditText) findViewById(R.id.time_editText));
                 editTextList.add((EditText) findViewById(R.id.email_editText));
 
-                for(int i=0;i<editTextList.size();i++){
+                //之前版本是所有欄位都要填，現在改成只有課程名稱一定要填入
+                /*for(int i=0;i<editTextList.size();i++){
                     if(editTextList.get(i).getText().toString() == ""){
                         Toast.makeText(v.getContext(), "欄位不可為空", Toast.LENGTH_SHORT).show();
                         return;
@@ -320,6 +317,10 @@ public class CourseDetailActivity extends ActionBarActivity {
                 if(!editTextList.get(3).getText().toString().matches(
                         "^[_a-z0-9-]+([.][_a-z0-9-]+)*@[a-z0-9-]+([.][a-z0-9-]+)*$")){
                     Toast.makeText(v.getContext(),"e-mail格式不正確",Toast.LENGTH_SHORT).show();
+                    return;
+                }*/
+                if(editTextList.get(0).getText() == null){
+                    Toast.makeText(v.getContext(), "課程欄位不可為空喔", Toast.LENGTH_SHORT).show();
                     return;
                 }
 

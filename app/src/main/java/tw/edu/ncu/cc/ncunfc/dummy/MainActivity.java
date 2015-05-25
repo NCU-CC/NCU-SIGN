@@ -16,8 +16,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
 
 import com.wuman.android.auth.OAuthManager;
@@ -35,9 +35,9 @@ import tw.edu.ncu.cc.ncunfc.dummy.sqlLite.SignTable;
 public class MainActivity extends ActionBarActivity {
 
     //OAuth
-    private static final String clientID = "20";
-    private static final String callBack = "test";
-    private static final String secret = "E.VpwapX7dutp0HDTQyBtNqVBGSEZQVD";
+    private static final String CLIENT_ID = "20";
+    private static final String CALL_BACK = "https://api.cc.ncu.edu.tw/oauth/oauth/test";
+    private static final String SECRET = "E.VpwapX7dutp0HDTQyBtNqVBGSEZQVD";
 
     private CookieManager cookieManager;
     private boolean auth = false;
@@ -87,7 +87,9 @@ public class MainActivity extends ActionBarActivity {
 
         //OAuth
         //check network status
-        /*
+        CookieSyncManager.createInstance(this);
+        cookieManager = CookieManager.getInstance();
+
         NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         if (networkInfo == null || !networkInfo.isConnected() || !networkInfo.isAvailable()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -109,12 +111,12 @@ public class MainActivity extends ActionBarActivity {
             });
             builder.show();
         } else {
-            // NCUNFCConfig ncuNFCConfig = new NCUNFCConfig("https://appstore.cc.ncu.edu.tw/course/", getString(R.string.language));
-            NCUNFCConfig ncuNFCConfig = new NCUNFCConfig("https://appstore.cc.ncu.edu.tw/course/", "zh-TW");
+            //NCUNFCConfig ncuNFCConfig = new NCUNFCConfig("https://appstore.cc.ncu.edu.tw/course/", getString(R.string.language));
+            NCUNFCConfig ncuNFCConfig = new NCUNFCConfig("https://api.cc.ncu.edu.tw/oauth/authorize", "zh-TW");
             AndroidOauthBuilder oauthBuilder = AndroidOauthBuilder.initContext(this)
-                    .clientID(MainActivity.clientID)
-                    .clientSecret(MainActivity.secret)
-                    .callback(MainActivity.callBack)
+                    .clientID(MainActivity.CLIENT_ID)
+                    .clientSecret(MainActivity.SECRET)
+                    .callback(MainActivity.CALL_BACK)
                     .scope("CLASS_READ")
                     .fragmentManager(getSupportFragmentManager());
             OAuthManager oAuthManager = oauthBuilder.build();
@@ -122,7 +124,7 @@ public class MainActivity extends ActionBarActivity {
 
             new AuthTask().execute();
 
-        }*/
+        }
     }
 
 

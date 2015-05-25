@@ -174,7 +174,8 @@ public class NewCourseActivity extends ActionBarActivity {
                 editTextList.add((EditText) findViewById(R.id.name_editText));
                 editTextList.add((EditText) findViewById(R.id.email_editText));
 
-                for (int i = 0; i < editTextList.size(); i++) {
+                //之前版本是所有欄位都要填，現在改成只有課程名稱一定要填入
+                /*for (int i = 0; i < editTextList.size(); i++) {
                     if (editTextList.get(i).getText().toString().equals("")) {
                         Toast.makeText(v.getContext(), "欄位不可為空", Toast.LENGTH_SHORT).show();
                         return;
@@ -185,10 +186,11 @@ public class NewCourseActivity extends ActionBarActivity {
                         "^[_a-z0-9-]+([.][_a-z0-9-]+)*@[a-z0-9-]+([.][a-z0-9-]+)*$")) {
                     Toast.makeText(v.getContext(), "e-mail格式不正確", Toast.LENGTH_SHORT).show();
                     return;
+                }*/
+                if(editTextList.get(0).getText() == null){
+                    Toast.makeText(v.getContext(), "課程欄位不可為空喔", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-
-                Log.e("debug","courseDateTime.getTimeInMillis():" + courseDateTime.getTimeInMillis());
-                Log.e("deug","timestamp.toString:" + new Timestamp(courseDateTime.getTimeInMillis()).toString());
 
                 // call api to add new course
                 Course course = new Course(-1,//SN AUTOINCREMENT

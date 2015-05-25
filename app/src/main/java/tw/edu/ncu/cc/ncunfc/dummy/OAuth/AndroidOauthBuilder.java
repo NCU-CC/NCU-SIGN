@@ -27,8 +27,8 @@ public class AndroidOauthBuilder {
     private String[] scope;
 
     private static final String CREDENTIAL_FILE_NAME = "credential.file";
-    private static final String AUTH_ENDPOINT_PATH  = "https://appstore.cc.ncu.edu.tw/oauth/oauth/authorize/";
-    private static final String TOKEN_ENDPOINT_PATH = "https://appstore.cc.ncu.edu.tw/oauth/oauth/token/";
+    private static final String AUTH_ENDPOINT_PATH  = "https://api.cc.ncu.edu.tw/oauth/oauth/authorize/";
+    private static final String TOKEN_ENDPOINT_PATH = "https://api.cc.ncu.edu.tw/oauth/oauth/token/";
 
     private AndroidOauthBuilder( Context context ) {
         this.credentialStore = new SharedPreferencesCredentialStore( context, CREDENTIAL_FILE_NAME, new JacksonFactory() );
