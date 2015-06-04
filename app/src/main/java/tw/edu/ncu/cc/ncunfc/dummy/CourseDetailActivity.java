@@ -79,8 +79,6 @@ public class CourseDetailActivity extends ActionBarActivity {
         initDataBase();
         setOnClickListeners();
 
-        //debug
-        insertSampleIntoDataBase();
     }
 
     @Override
@@ -185,15 +183,6 @@ public class CourseDetailActivity extends ActionBarActivity {
     private void closeDataBase(){
         signTable.close();
         courseTable.close();
-    }
-
-    private void insertSampleIntoDataBase(){
-        signTable = new SignTable(getApplicationContext());
-        // 如果資料庫是空的，就建立一些範例資料
-        // 這是為了方便測試用的，完成應用程式以後可以拿掉
-        if (signTable.getCount() == 0) {
-            signTable.sample();
-        }
     }
 
     private void setOnClickListeners(){
@@ -342,6 +331,7 @@ public class CourseDetailActivity extends ActionBarActivity {
                 bundle.putString(CourseTable.NAME_COLUMN, course.getName());
                 bundle.putLong(CourseTable.DATE_TIME_COLUMN, course.getDateTime());
                 bundle.putString(CourseTable.MAILDES_COLUMN, course.getMailDes());
+                bundle.putBoolean("CALLED_BY_ACTIVITY", true);
 
                 newAct.putExtras(bundle);
                 closeDataBase();

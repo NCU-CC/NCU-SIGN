@@ -3,54 +3,34 @@ package tw.edu.ncu.cc.ncunfc.dummy;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
-import com.wuman.android.auth.OAuthManager;
 
 import java.util.ArrayList;
 
 import tw.edu.ncu.cc.ncunfc.R;
-import tw.edu.ncu.cc.ncunfc.dummy.OAuth.AndroidOauthBuilder;
-import tw.edu.ncu.cc.ncunfc.dummy.OAuth.NCUNFCClient;
-import tw.edu.ncu.cc.ncunfc.dummy.OAuth.NCUNFCConfig;
 import tw.edu.ncu.cc.ncunfc.dummy.obj.Course;
 import tw.edu.ncu.cc.ncunfc.dummy.sqlLite.CourseTable;
 import tw.edu.ncu.cc.ncunfc.dummy.sqlLite.SignTable;
 
 public class MainActivity extends ActionBarActivity {
-
-    //OAuth
-    private static final String CLIENT_ID = "20";
-    private static final String CALL_BACK = "https://api.cc.ncu.edu.tw/oauth/oauth/test";
-    private static final String SECRET = "E.VpwapX7dutp0HDTQyBtNqVBGSEZQVD";
-
-    private CookieManager cookieManager;
-    private boolean auth = false;
-    public NCUNFCClient ncuNfcClient;
-
-    //debug
-    CourseTable courseTable;
+    //sql data
+    private CourseTable courseTable;
 
     //UI
     private ListView courseListView;
-    public static CustomAdapter adapter;
+    protected static CustomAdapter adapter;
     //為了讓CourseDetailActivity在更改完課程資料後可以notify這個adapter，所以把這個field設為public static
     //不然更改完內容直接跳回來的話，有可能因為listView裡的東西被改過，又沒有(或來不及，因為AsyncTask來不及通知)通知listview的adapter而閃退。
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e("debug","MainActivity.OnCreate");
@@ -77,60 +57,11 @@ public class MainActivity extends ActionBarActivity {
             }
         });
         courseListView.setAdapter(adapter);
-
-        //for debug
-        /*
-        initDataBase(this);
-        if(courseTable.getCount() <= 0){
-            Log.e("debug", "insert result: " + courseTable.insert(new Course(1,"測試課程",System.currentTimeMillis(),"xxx663xxx@gmail.com")));;
-        }*/
-
-        //OAuth
-        //check network status
-        CookieSyncManager.createInstance(this);
-        cookieManager = CookieManager.getInstance();
-
-        NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-        if (networkInfo == null || !networkInfo.isConnected() || !networkInfo.isAvailable()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            //builder.setIcon(R.drawable.ic_launcher);
-            builder.setTitle("無網路連線");
-            builder.setMessage("無網路連線以登入簽到系統");
-            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                }
-            });
-            builder.setPositiveButton("設定網路", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    startActivity(new Intent(Settings.ACTION_SETTINGS));
-                    finish();
-                }
-            });
-            builder.show();
-        } else {
-            //NCUNFCConfig ncuNFCConfig = new NCUNFCConfig("https://appstore.cc.ncu.edu.tw/course/", getString(R.string.language));
-            NCUNFCConfig ncuNFCConfig = new NCUNFCConfig("https://api.cc.ncu.edu.tw/oauth/authorize", "zh-TW");
-            AndroidOauthBuilder oauthBuilder = AndroidOauthBuilder.initContext(this)
-                    .clientID(MainActivity.CLIENT_ID)
-                    .clientSecret(MainActivity.SECRET)
-                    .callback(MainActivity.CALL_BACK)
-                    .scope("CLASS_READ")
-                    .fragmentManager(getSupportFragmentManager());
-            OAuthManager oAuthManager = oauthBuilder.build();
-            ncuNfcClient = new NCUNFCClient(ncuNFCConfig, oAuthManager, this);
-
-            new AuthTask().execute();
-
-        }
     }
 
 
     @Override
     public void onResume() {
-        Log.e("debug","MainActivity.OnResume");
         super.onResume();
         //利用asynctask從DB拿資料
         new getCourseTask(this, adapter).execute();
@@ -163,25 +94,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private class AuthTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            cookieManager.setCookie("portal.ncu.edu.tw", "JSESSIONID=");
-            try {
-                ncuNfcClient.initAccessToken();
-            } catch (Exception e) {
-                finish();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-                auth = true;
-            }
-    }
-
     private class getCourseTask extends AsyncTask<Void,Void,Void>{
 
         Context context;
@@ -209,11 +121,10 @@ public class MainActivity extends ActionBarActivity {
             //get courses from DB and pass it to listView adapter
             initDataBase(context);
             ArrayList<Course> courses = courseTable.getAll();
-
+            /*
             for(int i=0;i<courses.size();i++) {
                 Log.e("debug","courses.get(" + i + ").getName()" + courses.get(i).getName());
-            }
-
+            }*/
             adapter.setArray(courses);
             return null;
         }
@@ -229,14 +140,13 @@ public class MainActivity extends ActionBarActivity {
 
     private void initDataBase(Context context){
         this.courseTable = new CourseTable(context);
-        new SignTable(context).cleanSDCard();
+        SignTable.cleanSDCard();
     }
 
     private void closeDataBase(){
         if(courseTable != null){
             courseTable.close();
         }
-
     }
 
 }

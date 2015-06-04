@@ -233,7 +233,6 @@ public class SignTable {
         File file = new File(directory, fileName);
 
         WorkbookSettings wbSettings = new WorkbookSettings();
-        //wbSettings.setLocale(new Locale("en", "EN"));
         WritableWorkbook workbook;
 
         try {
@@ -247,9 +246,6 @@ public class SignTable {
                 sheet.addCell(new Label(2, 0, "姓名"));
                 if (cursor.moveToFirst()) {
                     do {
-                        //String title = cursor.getString(cursor.getColumnIndex(DatabaseHelper.TODO_SUBJECT));
-                        //String desc = cursor.getString(cursor.getColumnIndex(DatabaseHelper.TODO_DESC));
-
                         String signTime = new Timestamp(cursor.getLong(cursor.getColumnIndex(SignTable.SIGNTIME_COLUMN))).toString();
                         String name = cursor.getString(cursor.getColumnIndex(SignTable.NAME_COLUMN));
                         String unit = cursor.getString(cursor.getColumnIndex(SignTable.UNIT_COLUMN));
@@ -280,7 +276,7 @@ public class SignTable {
     }
 
     //借用完手機的空間建立好excel表並寄出去之後，要把占用的空間清乾淨
-    public void cleanSDCard(){
+    public static void cleanSDCard(){
         try{
             File sdCard = Environment.getExternalStorageDirectory();
             File directory = new File(sdCard.getAbsolutePath() + "/ncuNFC");
@@ -310,7 +306,7 @@ public class SignTable {
         return false;
     }
 
-    public void deleteRecurisively(File f){
+    public static void deleteRecurisively(File f){
         File[] childrenFile = f.listFiles();
         if(childrenFile != null || childrenFile.length != 0) {
             for (int i = 0; i < childrenFile.length; i++) {

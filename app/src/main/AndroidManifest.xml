@@ -33,10 +33,6 @@
             android:label="@string/title_activity_new_course" >
         </activity>
         <activity
-            android:name=".dummy.CourseListActivity"
-            android:label="@string/title_activity_course_list" >
-        </activity>
-        <activity
             android:name=".dummy.CourseDetailActivity"
             android:label="@string/title_activity_course_detail" >
         </activity>

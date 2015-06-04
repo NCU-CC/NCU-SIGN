@@ -99,10 +99,8 @@ public class CourseTable {
                 TABLE_NAME, null, null, null, null, null, null, null);
 
         //debug
-        int count = 0;
         while (cursor.moveToNext()) {
             result.add(getCourse(cursor));
-            count++;
         }
 
         cursor.close();

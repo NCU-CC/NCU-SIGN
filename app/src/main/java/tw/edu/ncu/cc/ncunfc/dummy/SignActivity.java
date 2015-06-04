@@ -1,20 +1,15 @@
 package tw.edu.ncu.cc.ncunfc.dummy;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.nfc.NfcAdapter;
-import android.nfc.Tag;
 import android.nfc.tech.NfcA;
-import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,12 +17,24 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.lang.ref.WeakReference;
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
 
 import tw.edu.ncu.cc.ncunfc.R;
 import tw.edu.ncu.cc.ncunfc.dummy.obj.Course;
@@ -44,27 +51,38 @@ public class SignActivity extends ActionBarActivity {
     private IntentFilter[] mFilters;
     private String[][] mTechLists;
     private static final String TAG = NfcA.class.getSimpleName();
-    private String currentStudentID;
 
     //Activity UIs
+    private Context context;
     private TextView statusTextView;
     private Button stopButton;
 
-    //Course Data
+    //Dialog, used to display message
+    private static AlertDialog dialog;
+
+    //Course Data, the one that displays on UI
     private Course course;
-    private int mCount = 0;
 
     //Sql data
     private SignTable signTable;
+
+    //api
+    private RequestQueue queue;
+    private String baseURL;
 
     //Sound effects
     MediaPlayer beepPlayer;
     MediaPlayer errorPlayer;
 
+    //boolean to judge the intent that start the activity
+    boolean calledByActivity = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign);
+
+        queue= Volley.newRequestQueue(this);
 
         Bundle bundle = this.getIntent().getExtras();
         long SN = bundle.getLong(CourseTable.SN_COLUMN, 1);
@@ -73,7 +91,10 @@ public class SignActivity extends ActionBarActivity {
         String mailDes = bundle.getString(CourseTable.MAILDES_COLUMN, "null");
         course = new Course(SN, name, date, mailDes);
 
+        calledByActivity = bundle.getBoolean("CALLED_BY_ACTIVITY",false);
+
         initView();
+        context = this;
         initSounds();
         setListeners(this);
         initDataBase(this);
@@ -163,12 +184,34 @@ public class SignActivity extends ActionBarActivity {
 
     @Override
     public void onNewIntent(Intent intent) {
-        Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        Log.i("Foreground dispatch", "Discovered tag with intent: " + intent);
-        String cardID = bytesToHex(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
-        //statusTextView.append("\nDiscovered tag " + ++mCount + " with intent: " + intent + "ID: " + cardID);
-        new getStudentDataTask(this, course.getSN(),
-                System.currentTimeMillis(), cardID).execute();
+        if(!calledByActivity){
+            this.finish();
+            return;
+        }
+        final String cardID = bytesToHex(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
+        final View view = getLayoutInflater()
+                .inflate(R.layout.dialog_id, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(SignActivity.this);
+        builder.setTitle("請輸入身分證後四碼");
+        builder.setView(view);
+        builder.setPositiveButton("確認", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText editText = (EditText) view.findViewById(R.id.editText);
+                String id = editText.getText().toString();
+                dialog.dismiss();
+                authenticate(cardID + "?id=" + id, System.currentTimeMillis(), course.getSN());
+            }
+        });
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.setCancelable(false);
+        dialog = builder.create();
+        dialog.show();
         beepPlayer.start();
     }
 
@@ -176,7 +219,6 @@ public class SignActivity extends ActionBarActivity {
     public void onPause() {
         super.onPause();
         mAdapter.disableForegroundDispatch(this);
-        //throw new RuntimeException("onPause not implemented to fix build");
     }
 
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
@@ -190,6 +232,52 @@ public class SignActivity extends ActionBarActivity {
         return new String(hexChars);
     }
 
+    private void authenticate(String path, final long signTime, final long SN){
+        //baseURL = "https://api.cc.ncu.edu.tw/student/v1/cards/";
+        baseURL = "http://140.115.3.188/student/v1/cards/";//testing baseURL
+        //token = config.APIToken;
+        queue.add( new StringRequest( Request.Method.GET, baseURL + path,
+                new Response.Listener< String >() {
+                    @Override
+                    public void onResponse( String response ) {
+                        Log.e("debug",response);
+                        try {
+                            JSONObject obj = new JSONObject(response);
+                           //save student data into sql table
+                            SignRecord temp = new SignRecord();
+                            temp.setName((String) obj.get("name"));
+                            temp.setUnit((String) obj.get("unit"));
+                            temp.setTime(signTime);
+                            String SNString = SN+"";
+                            temp.setSN(SNString);
+                            signTable.insert(temp);
+                            Toast.makeText(context,"簽到成功",Toast.LENGTH_LONG).show();
+                            updateStatusTextView((String) obj.get("name"), (String) obj.get("unit"), signTime);
+                        } catch (JSONException e) {
+                            Log.e("debug", e.toString());
+                            e.printStackTrace();
+                            Toast.makeText(context, "簽到失敗", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse( VolleyError error ) {
+                        Log.e("debug", error.toString());
+                        Toast.makeText(context, "簽到失敗", Toast.LENGTH_LONG).show();
+                        errorPlayer.start();
+                    }
+                }
+        ) {
+            public Map< String, String > getHeaders() throws AuthFailureError {
+                Map< String, String > headers = new HashMap<>();
+                headers.put( "X-NCU-API-TOKEN", "Mjo6OnBUM01lQkZTWU1wZE1OV0hYaVcyZXNGVlgzeW02MXc1");
+                return headers;
+            }
+        } );
+    }
+
+    /*
     private class getStudentDataTask extends AsyncTask<Void,Void,Void> {
 
         private final WeakReference<SignActivity> signActivityWeakRef;
@@ -258,7 +346,7 @@ public class SignActivity extends ActionBarActivity {
                 this.dummyName = dummyName;
             }
         }
-    }
+    }*/
 
     private void initDataBase(Context context){
         signTable = new SignTable(context);
@@ -304,8 +392,8 @@ public class SignActivity extends ActionBarActivity {
 
     public void updateStatusTextView(String name, String unit, long timeStamp){
         statusTextView.setText("姓名：" + name +
-                               "\n卡號：" + unit +
-                               "\n簽到時間：" + new Timestamp(timeStamp).toString());
+                "\n卡號：" + unit +
+                "\n簽到時間：" + new Timestamp(timeStamp).toString());
     }
 
 }
