@@ -9,24 +9,38 @@ import android.widget.TextView;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import tw.edu.ncu.cc.ncunfc.R;
 import tw.edu.ncu.cc.ncunfc.dummy.obj.Course;
+import tw.edu.ncu.cc.ncunfc.dummy.sqlLite.CourseTable;
 
 public class CustomAdapter extends BaseAdapter {
+    public static final int SORT_BY_NAME = 0;
+    public static final int SORT_BY_DATE = 1;
+    public static final int SORT_BY_CREATE_DATE = 2;
 
-    private LayoutInflater myInflater;
     private Context context;
     private ArrayList<Course> courseList = new ArrayList<Course>();
 
     public CustomAdapter(Context context, ArrayList courseList){
         this.context = context;
         this.courseList = courseList;
-        myInflater = LayoutInflater.from(context);
     };
 
     public void setArray(ArrayList<Course> courseList){
         this.courseList = new ArrayList<Course>(courseList);
+    }
+
+    public void refresh(int sortMode){
+        CourseTable courseTable = new CourseTable(context);
+        this.courseList = courseTable.getAll();
+        courseTable.close();
+        if(sortMode != SORT_BY_CREATE_DATE){
+            Collections.sort(courseList, new CustomComparator(sortMode));
+        }
+        this.notifyDataSetChanged();
     }
 
     @Override
@@ -82,13 +96,38 @@ public class CustomAdapter extends BaseAdapter {
     }
 
     //自訂類別，表達個別listItem中的view物件集合。
-    class ViewTag{
+    private class ViewTag{
         TextView dateTextView;
         TextView nameTextView;
 
         public ViewTag(TextView dateTextView, TextView nameTextView){
             this.dateTextView = dateTextView;
             this.nameTextView = nameTextView;
+        }
+    }
+
+    private class CustomComparator implements Comparator<Course> {
+        private int sortMode = CustomAdapter.SORT_BY_DATE;
+
+        public CustomComparator(int sortMode){
+            this.sortMode = sortMode;
+        }
+
+        @Override
+        public int compare(Course lhs, Course rhs) {
+            int retVal = 0;
+
+            switch (sortMode){
+                case SORT_BY_DATE:
+                    Long lhsDateTime = lhs.getDateTime();
+                    retVal = lhsDateTime.compareTo(rhs.getDateTime());
+                    break;
+                case SORT_BY_NAME:
+                    retVal = lhs.getName().compareTo(rhs.getName());
+                    break;
+            }
+
+            return retVal;
         }
     }
 }

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -161,6 +162,7 @@ public class NewCourseActivity extends ActionBarActivity {
         timeEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                dateEditText.clearFocus();
                 if(!timeDialog.isShowing()){
                     timeDialog.show();
                 }
@@ -259,44 +261,13 @@ public class NewCourseActivity extends ActionBarActivity {
     }
 
     private void updateDateEditText(){
-        /*
-        String day = "" + courseDateTime.get(Calendar.DAY_OF_MONTH);
-        String month = "" + (courseDateTime.get(Calendar.MONTH) + 1);
-        String year = "" + courseDateTime.get(Calendar.YEAR);
-        */
-
-        /*
-        courseDateTime.getTimeInMillis();
-        SimpleDateFormat year_date = new SimpleDateFormat("yyyy", Locale.getDefault());
-        String year = year_date.format(courseDateTime.getTime());
-
-        SimpleDateFormat month_date = new SimpleDateFormat("MM", Locale.getDefault());
-        String month = month_date.format(courseDateTime.getTime());
-
-        SimpleDateFormat day_date = new SimpleDateFormat("FF", Locale.getDefault());
-        String day = month_date.format(courseDateTime.getTime());
-
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("", Locale.getDefault());
-        */
-        Timestamp temp = new Timestamp(courseDateTime.getTimeInMillis());
+                Timestamp temp = new Timestamp(courseDateTime.getTimeInMillis());
         String[] tempString  = temp.toString().split(" ");
 
         dateEditText.setText(tempString[0]);
     }
 
     private void updateTimeEditText(){
-        /*
-        String hour = "" + courseDateTime.get(Calendar.HOUR_OF_DAY);
-        String minute = "" + courseDateTime.get(Calendar.MINUTE);
-        */
-        /*
-        courseDateTime.getTimeInMillis();
-        SimpleDateFormat month_date = new SimpleDateFormat("HH", Locale.getDefault());
-        String hour = month_date.format(courseDateTime.getTime());
-
-        SimpleDateFormat day_date = new SimpleDateFormat("mm", Locale.getDefault());
-        String minute = month_date.format(courseDateTime.getTime());
-        */
         Timestamp temp = new Timestamp(courseDateTime.getTimeInMillis());
         String[] tempString  = temp.toString().split(" ");
         String timeString = tempString[1].substring(0,tempString[1].lastIndexOf(":"));

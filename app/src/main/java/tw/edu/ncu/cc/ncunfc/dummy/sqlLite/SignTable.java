@@ -98,16 +98,16 @@ public class SignTable {
 
         // 執行修改資料並回傳修改的資料數量是否成功
         return db.update(TABLE_NAME, cv, where, null) > 0;
-    }
+    }*/
 
-    // 刪除參數指定編號的資料
+    //刪除參數指定編號的資料
     public boolean delete(long id){
         // 設定條件為編號，格式為「欄位名稱=資料」
-        String where = KEY_ID + "=" + id;
+        String where = SN_COLUMN + "=" + id;
         // 刪除指定編號資料並回傳刪除是否成功
         return db.delete(TABLE_NAME, where , null) > 0;
     }
-    */
+
 
     // 讀取所有記事資料
     public ArrayList<SignRecord> getAll() {
@@ -152,11 +152,18 @@ public class SignTable {
         Cursor cursor = db.query(
                 TABLE_NAME, null, where, null, null, null, null, null);
 
-        cursor.moveToFirst();
-
-        while (cursor.moveToNext()) {
-            result.add(getRecord(cursor));
+        if(cursor.moveToFirst()){
+            do{
+                result.add(getRecord(cursor));
+            }while(cursor.moveToNext());
         }
+
+        //debug
+        Log.e("debug","result.size: " + result.size());
+        for(int i=0;i<result.size();i++){
+            Log.e("debug","result.get("+i+").SignTime: " + result.get(i).getSignTime());
+        }
+
 
         // 關閉Cursor物件
         cursor.close();

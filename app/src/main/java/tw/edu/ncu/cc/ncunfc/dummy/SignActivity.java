@@ -8,14 +8,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.nfc.NfcAdapter;
 import android.nfc.tech.NfcA;
+import android.os.AsyncTask;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -28,6 +35,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.wuman.android.auth.OAuthManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +45,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tw.edu.ncu.cc.ncunfc.R;
+import tw.edu.ncu.cc.ncunfc.dummy.OAuth.AndroidOauthBuilder;
+import tw.edu.ncu.cc.ncunfc.dummy.OAuth.NCUNFCClient;
 import tw.edu.ncu.cc.ncunfc.dummy.obj.Course;
 import tw.edu.ncu.cc.ncunfc.dummy.obj.SignRecord;
 import tw.edu.ncu.cc.ncunfc.dummy.sqlLite.CourseTable;
@@ -57,7 +67,7 @@ public class SignActivity extends ActionBarActivity {
     private TextView statusTextView;
     private Button stopButton;
 
-    //Dialog, used to display message
+    //Dialog, used to display sign status message
     private static AlertDialog dialog;
 
     //Course Data, the one that displays on UI
@@ -71,11 +81,14 @@ public class SignActivity extends ActionBarActivity {
     private String baseURL;
 
     //Sound effects
-    MediaPlayer beepPlayer;
-    MediaPlayer errorPlayer;
+    private MediaPlayer beepPlayer;
+    private MediaPlayer errorPlayer;
 
     //boolean to judge the intent that start the activity
     boolean calledByActivity = false;
+
+    //boolean to judge whether the phone NFC feature
+    boolean hasNFC = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,9 +136,7 @@ public class SignActivity extends ActionBarActivity {
     @Override
     public void onResume() {
         super.onResume();
-        mAdapter = NfcAdapter.getDefaultAdapter(this);
 
-        //unchecked
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC)) {
             // Device not compatible for NFC support
             AlertDialog.Builder builder = new AlertDialog.Builder(SignActivity.this);
@@ -139,7 +150,34 @@ public class SignActivity extends ActionBarActivity {
                 }
             });
             builder.create().show();
+            hasNFC = false;
+            return;
+        }else {
+            hasNFC = true;
         }
+
+        NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+        if (networkInfo == null || !networkInfo.isConnected() || !networkInfo.isAvailable()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("無網路連線");
+            builder.setMessage("無網路連線取得學生資料");
+            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
+            builder.setPositiveButton("設定網路", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    startActivity(new Intent(Settings.ACTION_SETTINGS));
+                    finish();
+                }
+            });
+            builder.show();
+        }
+
+        mAdapter = NfcAdapter.getDefaultAdapter(this);
 
         if(mAdapter == null || !mAdapter.isEnabled()){
             AlertDialog.Builder builder = new AlertDialog.Builder(SignActivity.this);
@@ -153,6 +191,7 @@ public class SignActivity extends ActionBarActivity {
                 }
             });
             builder.create().show();
+            return;
         }
         mAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters, mTechLists);
     }
@@ -181,7 +220,7 @@ public class SignActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
+    //偵測到NFC卡後要做什麼事
     @Override
     public void onNewIntent(Intent intent) {
         if(!calledByActivity){
@@ -211,6 +250,7 @@ public class SignActivity extends ActionBarActivity {
         });
         builder.setCancelable(false);
         dialog = builder.create();
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         dialog.show();
         beepPlayer.start();
     }
@@ -218,7 +258,9 @@ public class SignActivity extends ActionBarActivity {
     @Override
     public void onPause() {
         super.onPause();
-        mAdapter.disableForegroundDispatch(this);
+        if(hasNFC){
+            mAdapter.disableForegroundDispatch(this);
+        }
     }
 
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
@@ -232,11 +274,12 @@ public class SignActivity extends ActionBarActivity {
         return new String(hexChars);
     }
 
-    private void authenticate(String path, final long signTime, final long SN){
-        //baseURL = "https://api.cc.ncu.edu.tw/student/v1/cards/";
-        baseURL = "http://140.115.3.188/student/v1/cards/";//testing baseURL
-        //token = config.APIToken;
-        queue.add( new StringRequest( Request.Method.GET, baseURL + path,
+    private void authenticate(String httpGetParams, final long signTime, final long SN){
+        baseURL = "https://api.cc.ncu.edu.tw/personnel/v1/cards/";//testing baseURL
+        if(System.currentTimeMillis() > NCUNFCClient.tokenValidUntil){
+            NCUNFCClient.refreshAccessToken(context);
+        }
+        queue.add( new StringRequest( Request.Method.GET, baseURL + httpGetParams,
                 new Response.Listener< String >() {
                     @Override
                     public void onResponse( String response ) {
@@ -263,90 +306,35 @@ public class SignActivity extends ActionBarActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse( VolleyError error ) {
+                        if(error.networkResponse.statusCode == 401){
+                            Toast.makeText(context, "簽到失敗，請點名者重新登入", Toast.LENGTH_LONG).show();
+                            NCUNFCClient.deleteAllToken(context);
+                            AndroidOauthBuilder oauthBuilder = AndroidOauthBuilder.initContext(context)
+                                    .clientID(getResources().getString(R.string.clientID))
+                                    .clientSecret(getResources().getString(R.string.clientSecret))
+                                    .callback(getResources().getString(R.string.callBack))
+                                    .scope("user.info.basic.read")
+                                    .fragmentManager(getSupportFragmentManager());
+                            OAuthManager oAuthManager = oauthBuilder.build();
+                            NCUNFCClient ncuNfcClient = new NCUNFCClient(oAuthManager);
+                            new AuthTask().execute();
+                        }else{
+                            Toast.makeText(context, "簽到失敗", Toast.LENGTH_LONG).show();
+                        }
                         Log.e("debug", error.toString());
-                        Toast.makeText(context, "簽到失敗", Toast.LENGTH_LONG).show();
+
                         errorPlayer.start();
                     }
                 }
         ) {
             public Map< String, String > getHeaders() throws AuthFailureError {
                 Map< String, String > headers = new HashMap<>();
-                headers.put( "X-NCU-API-TOKEN", "Mjo6OnBUM01lQkZTWU1wZE1OV0hYaVcyZXNGVlgzeW02MXc1");
+                //headers.put( "X-NCU-API-TOKEN", getResources().getString(R.string.apiToken));
+                headers.put( "Authorization", "Bearer " + NCUNFCClient.accessToken);
                 return headers;
             }
         } );
     }
-
-    /*
-    private class getStudentDataTask extends AsyncTask<Void,Void,Void> {
-
-        private final WeakReference<SignActivity> signActivityWeakRef;
-        String SN;
-        Long time;
-        String cardID;
-        Dialog dialog;
-
-        DummyResponse response;
-
-        public getStudentDataTask(SignActivity s, long SN, Long time, String cardID){
-            super();
-            this.signActivityWeakRef =new WeakReference<SignActivity>(s);
-            this.SN = "" + SN;
-            this.time = time;
-            this.cardID = cardID;
-        }
-
-        @Override
-        protected void onPreExecute(){
-            super.onPreExecute();
-            if (signActivityWeakRef.get() != null && !signActivityWeakRef.get().isFinishing()){
-                AlertDialog.Builder builder = new AlertDialog.Builder(SignActivity.this);
-                builder.setMessage("取得學生資料中");
-                dialog = builder.create();
-                dialog.setCancelable(false);
-                dialog.show();
-            }
-
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            //call api get student data and save into sql table
-            response = dummyApiCall(cardID);
-            SignRecord temp = new SignRecord();
-            temp.setName(response.dummyName);
-            temp.setUnit(response.dummyUnit);
-            temp.setTime(this.time);
-            temp.setSN(this.SN);
-            signTable.insert(temp);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void unused){
-            if (signActivityWeakRef.get() != null && !signActivityWeakRef.get().isFinishing()){
-                dialog.dismiss();
-            }
-            updateStatusTextView(response.dummyName, response.dummyUnit, this.time);
-            errorPlayer.start();
-        }
-
-        private DummyResponse dummyApiCall(String cardID){
-            if(cardID.equals("E098AFFC")){
-                return new DummyResponse("資工二A","胡家銘");
-            }
-            return new DummyResponse("不認識的單位","不認識的人");
-        }
-
-        private class DummyResponse{
-            public String dummyUnit;
-            public String dummyName;
-            private DummyResponse(String dummyUnit, String dummyName){
-                this.dummyUnit = dummyUnit;
-                this.dummyName = dummyName;
-            }
-        }
-    }*/
 
     private void initDataBase(Context context){
         signTable = new SignTable(context);
@@ -392,8 +380,36 @@ public class SignActivity extends ActionBarActivity {
 
     public void updateStatusTextView(String name, String unit, long timeStamp){
         statusTextView.setText("姓名：" + name +
-                "\n卡號：" + unit +
+                "\n單位：" + unit +
                 "\n簽到時間：" + new Timestamp(timeStamp).toString());
+    }
+
+    private class AuthTask extends AsyncTask<Void, Void, Void> {
+        private boolean authSuccess = true;
+        @Override
+        protected Void doInBackground(Void... params) {
+            //debug
+            CookieSyncManager.createInstance(context);
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.setCookie("portal.ncu.edu.tw", "JSESSIONID=");
+            try {
+                NCUNFCClient.initAccessToken(context);
+                authSuccess = true;
+            } catch (Exception e) {
+                authSuccess = false;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            if(!authSuccess){
+                Toast.makeText(context, "登入失敗", Toast.LENGTH_LONG).show();
+            }else{
+                Toast.makeText(context, "已登入", Toast.LENGTH_LONG).show();
+            }
+
+        }
     }
 
 }

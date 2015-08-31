@@ -1,122 +1,147 @@
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--一個layout最外圍沒辦法設定為ScrollView，所以只能先放一個LinearLayout-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="tw.edu.ncu.cc.ncunfc.dummy.NewCourseActivity">
 
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-        <TextView android:id="@android:id/empty"
-            android:text="課程名稱"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="left"
-            android:layout_span="2"/>
-    </TableRow>
+            android:orientation="vertical">
 
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/name_editText"
-            android:layout_span="2" />
-    </TableRow>
 
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-        <TextView android:id="@android:id/empty"
-            android:text="日期"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="left"
-            android:layout_span="2"/>
-    </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+                <TextView android:id="@android:id/empty"
+                    android:text="課程名稱"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="left"
+                    android:layout_span="2"/>
+            </TableRow>
 
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="date"
-            android:ems="10"
-            android:id="@+id/date_editText"
-            android:layout_span="2"/>
-    </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/name_editText"
+                    android:layout_span="2"
+                    android:backgroundTint="@color/myOrange"/>
+            </TableRow>
 
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-        <TextView android:id="@android:id/empty"
-            android:text="時間"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="left"
-            android:layout_span="2"/>
-    </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+                <TextView android:id="@android:id/empty"
+                    android:text="日期"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="left"
+                    android:layout_span="2"/>
+            </TableRow>
 
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:ems="10"
+                    android:id="@+id/date_editText"
+                    android:layout_span="2"
+                    android:backgroundTint="@color/myOrange"/>
+            </TableRow>
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="time"
-            android:ems="10"
-            android:id="@+id/time_editText"
-            android:layout_span="2"/>
-    </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+                <TextView android:id="@android:id/empty"
+                    android:text="時間"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="left"
+                    android:layout_span="2"/>
+            </TableRow>
 
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-        <TextView android:id="@android:id/empty"
-            android:text="寄送至"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="left"
-            android:layout_span="2"/>
-    </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
 
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:ems="10"
+                    android:id="@+id/time_editText"
+                    android:layout_span="2"
+                    android:backgroundTint="@color/myOrange"/>
+            </TableRow>
 
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:inputType="textEmailAddress"
-            android:ems="10"
-            android:id="@+id/email_editText"
-            android:layout_span="3"/>
-    </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+                <TextView android:id="@android:id/empty"
+                    android:text="寄送至"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="left"
+                    android:layout_span="2"/>
+            </TableRow>
 
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="        取消        "
-            android:id="@+id/cancel_button"
-            android:layout_weight="1"/>
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:ems="10"
+                    android:id="@+id/email_editText"
+                    android:layout_span="2"
+                    android:backgroundTint="@color/myOrange"/>
+            </TableRow>
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="        新增        "
-            android:id="@+id/add_button2"
-            android:layout_weight="1"/>
-    </TableRow>
-</TableLayout>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="取消"
+                    android:id="@+id/cancel_button"
+                    android:layout_weight="1"
+                    android:background="@color/myLightOrange"
+                    android:layout_gravity="center"
+                    android:layout_margin="5dp" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="新增"
+                    android:id="@+id/add_button2"
+                    android:layout_weight="1"
+                    android:background="@color/myLightOrange"
+                    android:layout_gravity="center"
+                    android:layout_margin="5dp" />
+            </TableRow>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

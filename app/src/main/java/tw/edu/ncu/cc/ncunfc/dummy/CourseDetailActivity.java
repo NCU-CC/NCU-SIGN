@@ -17,11 +17,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.wuman.android.auth.OAuthManager;
 
 import java.io.File;
 import java.sql.Timestamp;
@@ -29,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import tw.edu.ncu.cc.ncunfc.R;
+import tw.edu.ncu.cc.ncunfc.dummy.OAuth.AndroidOauthBuilder;
+import tw.edu.ncu.cc.ncunfc.dummy.OAuth.NCUNFCClient;
 import tw.edu.ncu.cc.ncunfc.dummy.obj.Course;
 import tw.edu.ncu.cc.ncunfc.dummy.obj.SignRecord;
 import tw.edu.ncu.cc.ncunfc.dummy.sqlLite.CourseTable;
@@ -65,7 +71,6 @@ public class CourseDetailActivity extends ActionBarActivity {
 
         this.context = this;
 
-        //取得intent中的bundle物件
         Bundle bundle = this.getIntent().getExtras();
         long SN = bundle.getLong(CourseTable.SN_COLUMN, 1);
         String name = bundle.getString(CourseTable.NAME_COLUMN, "null");
@@ -78,7 +83,6 @@ public class CourseDetailActivity extends ActionBarActivity {
         initView();
         initDataBase();
         setOnClickListeners();
-
     }
 
     @Override
@@ -239,6 +243,7 @@ public class CourseDetailActivity extends ActionBarActivity {
                 }
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+                builder.setTitle("簽到記錄");
                 builder.setMessage(dialogMessage);
                 builder.setPositiveButton("確定", new DialogInterface.OnClickListener() {
                     @Override
@@ -324,18 +329,32 @@ public class CourseDetailActivity extends ActionBarActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent newAct = new Intent();
-                newAct.setClass(CourseDetailActivity.this, SignActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putLong(CourseTable.SN_COLUMN, course.getSN());
-                bundle.putString(CourseTable.NAME_COLUMN, course.getName());
-                bundle.putLong(CourseTable.DATE_TIME_COLUMN, course.getDateTime());
-                bundle.putString(CourseTable.MAILDES_COLUMN, course.getMailDes());
-                bundle.putBoolean("CALLED_BY_ACTIVITY", true);
+                if(NCUNFCClient.isLoggedIn(context)){
+                    Intent newAct = new Intent();
+                    newAct.setClass(CourseDetailActivity.this, SignActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putLong(CourseTable.SN_COLUMN, course.getSN());
+                    bundle.putString(CourseTable.NAME_COLUMN, course.getName());
+                    bundle.putLong(CourseTable.DATE_TIME_COLUMN, course.getDateTime());
+                    bundle.putString(CourseTable.MAILDES_COLUMN, course.getMailDes());
+                    bundle.putBoolean("CALLED_BY_ACTIVITY", true);
 
-                newAct.putExtras(bundle);
-                closeDataBase();
-                startActivity( newAct );
+                    newAct.putExtras(bundle);
+                    closeDataBase();
+                    startActivity(newAct);
+                }else{
+                    Toast.makeText(context, "點名者若未登入學校帳號，系統無法提供識別學生證之服務", Toast.LENGTH_SHORT).show();
+                    NCUNFCClient.deleteAllToken(context);
+                    AndroidOauthBuilder oauthBuilder = AndroidOauthBuilder.initContext(context)
+                            .clientID(getResources().getString(R.string.clientID))
+                            .clientSecret(getResources().getString(R.string.clientSecret))
+                            .callback(getResources().getString(R.string.callBack))
+                            .scope("user.info.basic.read")
+                            .fragmentManager(getSupportFragmentManager());
+                    OAuthManager oAuthManager = oauthBuilder.build();
+                    NCUNFCClient ncuNfcClient = new NCUNFCClient(oAuthManager);
+                    new AuthTask().execute();
+                }
             }
         });
 
@@ -386,6 +405,7 @@ public class CourseDetailActivity extends ActionBarActivity {
         @Override
         protected Void doInBackground(Void... params) {
             //delete course in DB
+            signTable.delete(SN);
             courseTable.delete(SN);
             return null;
         }
@@ -432,4 +452,33 @@ public class CourseDetailActivity extends ActionBarActivity {
             finish();
         }
     }
+
+    private class AuthTask extends AsyncTask<Void, Void, Void> {
+        private boolean authSuccess = true;
+        @Override
+        protected Void doInBackground(Void... params) {
+            //debug
+            CookieSyncManager.createInstance(context);
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.setCookie("portal.ncu.edu.tw", "JSESSIONID=");
+            try {
+                NCUNFCClient.initAccessToken(context);
+                authSuccess = true;
+            } catch (Exception e) {
+                authSuccess = false;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            if(!authSuccess){
+                Toast.makeText(context, "登入失敗", Toast.LENGTH_LONG).show();
+            }else{
+                Toast.makeText(context, "已登入", Toast.LENGTH_LONG).show();
+            }
+
+        }
+    }
+
 }

@@ -16,10 +16,10 @@
         android:id="@+id/listView" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="無課程資料，請按下右上方加號鍵新增課程"
+        android:text="無課程資料，點此或右上角選單中新增課程以新增課程資料"
         android:visibility="gone"
         android:id="@+id/empty" />
 
