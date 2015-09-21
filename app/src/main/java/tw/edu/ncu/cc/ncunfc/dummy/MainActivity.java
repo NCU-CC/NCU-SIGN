@@ -220,6 +220,24 @@ public class MainActivity extends ActionBarActivity {
                         }
                     }).create().show();
         }
+        else if(id == R.id.action_announcement){
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle("關於")
+                    .setMessage("Version：v1.0\n" +
+                            "License：MIT License\n" +
+                            "Repository：https://github.com/NCU-CC/NCU-SIGN\n" +
+                            "Contributors：xxx663xxx\n" +
+                            "Owner：National Central University, Computer Center\n" +
+                            "Url：https://www.cc.ncu.edu.tw\n" +
+                            "Email：mobile@cc.ncu.edu.tw")
+                    .setCancelable(false)
+                    .setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).create().show();
+        }
         /*else if(id == R.id.action_invalidate_token){//debug
             NCUNFCClient.setTokenUnvalid(context);
         }*/

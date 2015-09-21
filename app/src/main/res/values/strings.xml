@@ -9,6 +9,7 @@
     <string name="action_sort_by_date">以課程日期排序</string>
     <string name="action_sort_by_create_date">以建立日期排序</string>
     <string name="term_of_service">使用條款</string>
+    <string name="action_announcement">關於</string>
 
     <string name="title_activity_nfc">NFCActivity</string>
     <string name="title_activity_new_course">新增課程</string>
