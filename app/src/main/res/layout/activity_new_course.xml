@@ -37,6 +37,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent">
                 <EditText
+                    android:text="2015中央大學電算中心APP說明會"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/name_editText"
@@ -109,6 +110,7 @@
                 android:layout_height="fill_parent">
 
                 <EditText
+                    android:text="xxx663xxx@gmail.com"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textEmailAddress"
