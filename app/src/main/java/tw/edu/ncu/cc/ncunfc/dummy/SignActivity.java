@@ -239,8 +239,7 @@ public class SignActivity extends ActionBarActivity {
                 EditText editText = (EditText) view.findViewById(R.id.editText);
                 String id = editText.getText().toString();
                 dialog.dismiss();
-                //authenticate(cardID + "?id=" + id, System.currentTimeMillis(), course.getSN());
-                authenticate(cardID + "?id=" + "7297", System.currentTimeMillis(), course.getSN());//展示用途
+                authenticate(cardID + "?id=" + id, System.currentTimeMillis(), course.getSN());
             }
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
