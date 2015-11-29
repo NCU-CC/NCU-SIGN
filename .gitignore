@@ -1,8 +1,7 @@
-.gradle
-/local.properties
-/.idea/workspace.xml
-/.idea/libraries
-.DS_Store
-/build
-/app/src/main/res/values/secret.xml
-.gradle
+NCU_SIGN/.gradle
+NCU-SIGN/local.properties
+NCU-SIGN/.idea/workspace.xml
+NCU-SIGN/.idea/libraries
+NCU-SIGN/.DS_Store
+NCU-SIGN/build
+NCU-SIGN/app/src/main/res/values/secret.xml
